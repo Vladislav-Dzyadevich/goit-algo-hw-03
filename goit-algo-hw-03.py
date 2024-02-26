@@ -4,32 +4,31 @@ import argparse
 
 
 def copy_files(source_dir, dest_dir):
-    # Перебираємо всі елементи у вихідній директорії
-    for root, dirs, files in os.walk(source_dir):
-        for file in files:
-            file_path = os.path.join(root, file)
+    for item in os.listdir(source_dir):
+        item_path = os.path.join(source_dir, item)
+        if os.path.isdir(item_path):
+            # Рекурсивно викликаємо функцію для директорії
+            copy_files(item_path, dest_dir)
+        elif os.path.isfile(item_path):
             # Отримуємо розширення файлу
-            _, extension = os.path.splitext(file)
-            # Перевіряємо, чи існує піддиректорія з назвою розширення
-            dest_subdir = os.path.join(dest_dir, extension[1:])  # Відкидаємо крапку в початку розширення
+            _, extension = os.path.splitext(item)
+            # Створюємо піддиректорію для копіювання
+            dest_subdir = os.path.join(dest_dir, extension[1:])
             if not os.path.exists(dest_subdir):
-                os.makedirs(dest_subdir)  # Створюємо піддиректорію, якщо вона не існує
+                os.makedirs(dest_subdir)
             # Копіюємо файл у відповідну піддиректорію
-            shutil.copy2(file_path, dest_subdir)
+            shutil.copy2(item_path, dest_subdir)
 
 
 def main():
-    # Парсинг аргументів командного рядка
     parser = argparse.ArgumentParser(description='Copy files recursively and sort them by extension.')
     parser.add_argument('source_dir', type=str, help='path to the source directory')
     parser.add_argument('dest_dir', type=str, nargs='?', default='dist', help='path to the destination directory (default is "dist")')
     args = parser.parse_args()
 
-    # Перевірка наявності директорії призначення
     if not os.path.exists(args.dest_dir):
-        os.makedirs(args.dest_dir)  # Створюємо директорію призначення, якщо вона не існує
+        os.makedirs(args.dest_dir)
 
-    # Копіювання файлів та сортування їх за розширенням
     copy_files(args.source_dir, args.dest_dir)
 
 
